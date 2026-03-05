@@ -104,9 +104,7 @@ class ProjectManager {
             title: "Code review",
             description: "Review project creation and dashboard flows.",
             dueDate: calendar.date(byAdding: .day, value: 5, to: now) ?? now,
-            assignedToId: aliceId,
-            isCompleted: true,
-            completedDate: now
+            assignedToId: aliceId
         )
 
         let member1 = TeamMember(
