@@ -25,7 +25,7 @@ struct ProjectDashboardView: View {
                                     Text(member.name)
                                         .font(.headline)
                                     HStack {
-                                        Text("Points: \(member.points)")
+                                        Text("🏆 \(member.points)")
                                         Text("🔥\(member.streak)")
                                         if let badge = badgeText(for: member) {
                                             Text(badge)

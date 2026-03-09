@@ -32,32 +32,53 @@ class ProjectManager {
     }
 
     func completeTask(_ task: Task, in project: Project) {
-        var updatedTask = task
-        updatedTask.isCompleted = true
-        updatedTask.completedDate = Date()
+        guard !task.isCompleted else { return }
+        toggleTaskCompletion(task, in: project)
+    }
 
-        var updatedProject = project
-        updatedProject.updateTask(updatedTask)
+    func toggleTaskCompletion(_ task: Task, in project: Project) {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }) else { return }
 
-        if var member = updatedProject.member(withId: task.assignedToId) {
-            member.totalPoints += updatedTask.pointsAwarded
-            member.completedTasksCount += 1
+        var updatedProject = projects[projectIndex]
+        guard let taskIndex = updatedProject.tasks.firstIndex(where: { $0.id == task.id }) else { return }
 
-            if updatedTask.wasCompletedOnTime {
-                member.currentStreak += 1
-                member.longestStreak = max(member.longestStreak, member.currentStreak)
-                member.onTimeCompletionsCount += 1
-            } else {
-                member.currentStreak = 0
+        var updatedTask = updatedProject.tasks[taskIndex]
+        if updatedTask.isCompleted {
+            updatedTask.isCompleted = false
+            updatedTask.completedDate = nil
+        } else {
+            updatedTask.isCompleted = true
+            updatedTask.completedDate = Date()
+        }
+        updatedProject.tasks[taskIndex] = updatedTask
+
+        if let memberIndex = updatedProject.members.firstIndex(where: { $0.id == updatedTask.assignedToId }) {
+            var member = updatedProject.members[memberIndex]
+            let memberTasks = updatedProject.tasks.filter { $0.assignedToId == member.id }
+            let completedTasks = memberTasks
+                .filter { $0.isCompleted }
+                .sorted { ($0.completedDate ?? .distantPast) < ($1.completedDate ?? .distantPast) }
+
+            member.tasksAssigned = memberTasks
+            member.totalPoints = memberTasks.reduce(0) { $0 + $1.pointsAwarded }
+            member.completedTasksCount = completedTasks.count
+            member.onTimeCompletionsCount = completedTasks.filter { $0.wasCompletedOnTime }.count
+
+            var runningStreak = 0
+            var longestStreak = 0
+            for completedTask in completedTasks {
+                if completedTask.wasCompletedOnTime {
+                    runningStreak += 1
+                    longestStreak = max(longestStreak, runningStreak)
+                } else {
+                    runningStreak = 0
+                }
             }
+            member.currentStreak = runningStreak
+            member.longestStreak = longestStreak
+            member.lastCompletedDate = completedTasks.last?.completedDate
 
-            member.lastCompletedDate = updatedTask.completedDate
-
-            if let taskIndex = member.tasksAssigned.firstIndex(where: { $0.id == updatedTask.id }) {
-                member.tasksAssigned[taskIndex] = updatedTask
-            }
-
-            updatedProject.updateMember(member)
+            updatedProject.members[memberIndex] = member
         }
 
         updateProject(updatedProject)

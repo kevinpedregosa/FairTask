@@ -16,7 +16,7 @@ struct MemberRowView: View {
 
                 Spacer()
 
-                Text("\(member.totalPoints) pts")
+                Text("🏆 \(member.totalPoints)")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundStyle(.blue)
@@ -25,7 +25,7 @@ struct MemberRowView: View {
             HStack(spacing: 16) {
                 Label("\(tasksForMember.count) tasks", systemImage: "list.bullet")
 
-                Label("\(member.currentStreak) streak", systemImage: "flame.fill")
+                Text("🔥 \(member.currentStreak) streak")
                     .foregroundStyle(member.currentStreak > 0 ? .orange : .secondary)
             }
             .font(.caption)

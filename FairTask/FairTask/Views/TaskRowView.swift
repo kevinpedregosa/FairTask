@@ -8,16 +8,13 @@ struct TaskRowView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Button {
-                if !task.isCompleted {
-                    projectManager.completeTask(task, in: project)
-                }
+                projectManager.toggleTaskCompletion(task, in: project)
             } label: {
-                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                Text(task.isCompleted ? "✅" : "⭕️")
                     .font(.title3)
                     .foregroundStyle(task.isCompleted ? .green : statusColor)
             }
             .buttonStyle(.plain)
-            .disabled(task.isCompleted)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(task.title)
@@ -43,7 +40,7 @@ struct TaskRowView: View {
             Spacer()
 
             if task.isCompleted {
-                Text("+\(task.pointsAwarded)")
+                Text("+🏆")
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.green)
