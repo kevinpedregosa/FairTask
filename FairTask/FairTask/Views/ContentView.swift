@@ -50,9 +50,7 @@ struct ContentView: View {
                 }
             }
             .sheet(isPresented: $showingNewProject) {
-                NavigationStack {
-                    CreateProjectView()
-                }
+                NewProjectView()
             }
         }
     }
