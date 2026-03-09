@@ -1,55 +1,63 @@
 import SwiftUI
 
 struct ProjectDetailView: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(ProjectManager.self) private var projectManager
     let project: Project
 
     @State private var showingNewTask = false
+    @State private var showingNewMember = false
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section("Team Overview") {
+        List {
+            Section("Team Overview") {
+                if currentProject.members.isEmpty {
+                    Text("No members yet")
+                        .foregroundStyle(.secondary)
+                } else {
                     ForEach(currentProject.members) { member in
                         MemberRowView(member: member, project: currentProject)
                     }
                 }
+            }
 
-                Section("All Tasks") {
-                    if currentProject.tasks.isEmpty {
-                        Text("No tasks yet")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(currentProject.tasks) { task in
-                            TaskRowView(task: task, project: currentProject)
-                        }
+            Section("All Tasks") {
+                if currentProject.tasks.isEmpty {
+                    Text("No tasks yet")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(currentProject.tasks) { task in
+                        TaskRowView(task: task, project: currentProject)
                     }
                 }
             }
-            .navigationTitle(project.name)
+        }
+        .navigationTitle(currentProject.name)
 #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.inline)
 #endif
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    showingNewMember = true
+                } label: {
+                    Image(systemName: "person.badge.plus")
                 }
 
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingNewTask = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .disabled(currentProject.members.isEmpty)
+                Button {
+                    showingNewTask = true
+                } label: {
+                    Image(systemName: "plus")
                 }
+                .disabled(currentProject.members.isEmpty)
             }
-            .sheet(isPresented: $showingNewTask) {
-                NewTaskView(project: currentProject)
+        }
+        .sheet(isPresented: $showingNewMember) {
+            NavigationStack {
+                NewMemberView(project: currentProject)
             }
+        }
+        .sheet(isPresented: $showingNewTask) {
+            NewTaskView(project: currentProject)
         }
     }
 
@@ -103,6 +111,8 @@ struct ProjectDetailView: View {
     let manager = ProjectManager()
     manager.projects = [project]
 
-    return ProjectDetailView(project: project)
-        .environment(manager)
+    return NavigationStack {
+        ProjectDetailView(project: project)
+    }
+    .environment(manager)
 }

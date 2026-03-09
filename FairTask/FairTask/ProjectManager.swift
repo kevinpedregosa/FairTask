@@ -92,6 +92,16 @@ class ProjectManager {
         updateProject(updatedProject)
     }
 
+    func addMember(named name: String, to project: Project) {
+        let cleanedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanedName.isEmpty else { return }
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }) else { return }
+
+        var updatedProject = projects[projectIndex]
+        updatedProject.members.append(TeamMember(name: cleanedName))
+        updateProject(updatedProject)
+    }
+
     private func saveProjects() {
         storageService.save(projects)
     }

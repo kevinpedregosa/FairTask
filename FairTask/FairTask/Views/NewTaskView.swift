@@ -65,16 +65,13 @@ struct NewTaskView: View {
     private func createTask() {
         guard let member = selectedMember else { return }
 
-        let task = Task(
+        projectManager.addTask(
             title: title,
             description: description,
             dueDate: dueDate,
-            assignedToId: member.id
+            assignedTo: member.id,
+            in: project
         )
-
-        var updatedProject = project
-        updatedProject.tasks.append(task)
-        projectManager.updateProject(updatedProject)
 
         dismiss()
     }
