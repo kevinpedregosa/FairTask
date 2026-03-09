@@ -63,6 +63,35 @@ class ProjectManager {
         updateProject(updatedProject)
     }
 
+    func addTask(
+        title: String,
+        description: String,
+        dueDate: Date,
+        assignedTo memberId: UUID,
+        in project: Project
+    ) {
+        let cleanedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanedTitle.isEmpty else { return }
+
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }) else { return }
+
+        var updatedProject = projects[projectIndex]
+        guard let memberIndex = updatedProject.members.firstIndex(where: { $0.id == memberId }) else { return }
+
+        let task = Task(
+            title: cleanedTitle,
+            description: cleanedDescription,
+            dueDate: dueDate,
+            assignedToId: memberId
+        )
+
+        updatedProject.tasks.append(task)
+        updatedProject.members[memberIndex].tasksAssigned.append(task)
+
+        updateProject(updatedProject)
+    }
+
     private func saveProjects() {
         storageService.save(projects)
     }

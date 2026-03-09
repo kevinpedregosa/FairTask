@@ -2,34 +2,89 @@ import SwiftUI
 
 struct NewTaskView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(ProjectManager.self) private var projectManager
     let project: Project
+
+    @State private var title = ""
+    @State private var description = ""
+    @State private var dueDate = Date().addingTimeInterval(86_400)
+    @State private var selectedMember: TeamMember?
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                Image(systemName: "plus.rectangle.on.rectangle")
-                    .font(.system(size: 44))
-                    .foregroundStyle(.blue)
-
-                Text("New Task Form Coming Next")
-                    .font(.headline)
-
-                Text("Project: \(project.name)")
-                    .foregroundStyle(.secondary)
-
-                Button("Done") {
-                    dismiss()
+            Form {
+                Section("Task Details") {
+                    TextField("Title", text: $title)
+                    TextField("Description", text: $description, axis: .vertical)
+                        .lineLimit(3...6)
                 }
-                .buttonStyle(.borderedProminent)
+
+                Section("Assignment") {
+                    Picker("Assign to", selection: $selectedMember) {
+                        Text("Select Member").tag(nil as TeamMember?)
+
+                        ForEach(project.members) { member in
+                            Text(member.name).tag(member as TeamMember?)
+                        }
+                    }
+
+                    DatePicker(
+                        "Due Date",
+                        selection: $dueDate,
+                        displayedComponents: .date
+                    )
+                }
             }
-            .padding()
             .navigationTitle("New Task")
+#if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+#endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Add") {
+                        createTask()
+                    }
+                    .disabled(!isValid)
+                }
+            }
+            .onAppear {
+                selectedMember = project.members.first
+            }
         }
+    }
+
+    private var isValid: Bool {
+        !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && selectedMember != nil
+    }
+
+    private func createTask() {
+        guard let member = selectedMember else { return }
+
+        let task = Task(
+            title: title,
+            description: description,
+            dueDate: dueDate,
+            assignedToId: member.id
+        )
+
+        var updatedProject = project
+        updatedProject.tasks.append(task)
+        projectManager.updateProject(updatedProject)
+
+        dismiss()
     }
 }
 
 #Preview {
-    let member = TeamMember(name: "Alice Johnson")
-    let project = Project(name: "Test Project", members: [member], tasks: [])
+    let member1 = TeamMember(name: "Alice Johnson")
+    let member2 = TeamMember(name: "Bob Smith")
+    let project = Project(name: "Test Project", members: [member1, member2])
+
     return NewTaskView(project: project)
+        .environment(ProjectManager())
 }
