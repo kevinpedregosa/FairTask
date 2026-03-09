@@ -30,8 +30,12 @@ struct ContentView: View {
                 } else {
                     List {
                         ForEach(projectManager.projects) { project in
-                            ProjectRowView(project: project)
-                                .padding(.vertical, 4)
+                            NavigationLink {
+                                ProjectDetailView(project: project)
+                            } label: {
+                                ProjectRowView(project: project)
+                                    .padding(.vertical, 4)
+                            }
                         }
                         .onDelete { indexSet in
                             projectManager.deleteProjects(at: indexSet)
