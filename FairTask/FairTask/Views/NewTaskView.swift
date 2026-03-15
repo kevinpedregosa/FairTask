@@ -9,6 +9,7 @@ struct NewTaskView: View {
     @State private var description = ""
     @State private var dueDate = Date().addingTimeInterval(86_400)
     @State private var selectedMember: TeamMember?
+    @State private var pointsWorth = 10
 
     var body: some View {
         NavigationStack {
@@ -33,6 +34,10 @@ struct NewTaskView: View {
                         selection: $dueDate,
                         displayedComponents: .date
                     )
+                }
+
+                Section("Rewards") {
+                    Stepper("Trophies: \(pointsWorth)", value: $pointsWorth, in: 1...50)
                 }
             }
             .navigationTitle("New Task")
@@ -69,6 +74,7 @@ struct NewTaskView: View {
             title: title,
             description: description,
             dueDate: dueDate,
+            pointsWorth: pointsWorth,
             assignedTo: member.id,
             in: project
         )

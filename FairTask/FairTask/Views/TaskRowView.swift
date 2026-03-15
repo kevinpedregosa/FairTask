@@ -33,18 +33,19 @@ struct TaskRowView: View {
 
                     Text(formattedDate)
                         .font(.caption)
-                        .foregroundStyle(statusColor)
+                        .foregroundStyle(task.isCompleted ? statusColor : .red)
                 }
             }
 
             Spacer()
 
-            if task.isCompleted {
-                Text("+🏆")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.green)
+            HStack(spacing: 4) {
+                Text("🏆")
+                Text("\(task.pointsWorth)")
             }
+            .font(.caption)
+            .fontWeight(.semibold)
+            .foregroundStyle(.blue)
         }
         .padding(.vertical, 4)
         .opacity(task.isCompleted ? 0.6 : 1.0)

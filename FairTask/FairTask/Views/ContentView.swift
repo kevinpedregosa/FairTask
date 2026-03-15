@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(ProjectManager.self) private var projectManager
     @State private var showingNewProject = false
+    @State private var projectToDelete: Project?
 
     var body: some View {
         NavigationStack {
@@ -36,6 +37,20 @@ struct ContentView: View {
                                 ProjectRowView(project: project)
                                     .padding(.vertical, 4)
                             }
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    projectToDelete = project
+                                } label: {
+                                    Label("Delete Project", systemImage: "trash")
+                                }
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    projectToDelete = project
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
                         .onDelete { indexSet in
                             projectManager.deleteProjects(at: indexSet)
@@ -44,6 +59,28 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("FairTask")
+            .confirmationDialog(
+                "Delete Project?",
+                isPresented: Binding(
+                    get: { projectToDelete != nil },
+                    set: { if !$0 { projectToDelete = nil } }
+                )
+            ) {
+                if let projectToDelete {
+                    Button("Delete \(projectToDelete.name)", role: .destructive) {
+                        deleteProject(projectToDelete)
+                        self.projectToDelete = nil
+                    }
+                }
+
+                Button("Cancel", role: .cancel) {
+                    projectToDelete = nil
+                }
+            } message: {
+                if let projectToDelete {
+                    Text("This will remove \(projectToDelete.name) and all of its tasks.")
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -57,6 +94,11 @@ struct ContentView: View {
                 NewProjectView()
             }
         }
+    }
+
+    private func deleteProject(_ project: Project) {
+        guard let index = projectManager.projects.firstIndex(where: { $0.id == project.id }) else { return }
+        projectManager.deleteProjects(at: IndexSet(integer: index))
     }
 }
 

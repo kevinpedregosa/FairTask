@@ -64,18 +64,8 @@ class ProjectManager {
             member.completedTasksCount = completedTasks.count
             member.onTimeCompletionsCount = completedTasks.filter { $0.wasCompletedOnTime }.count
 
-            var runningStreak = 0
-            var longestStreak = 0
-            for completedTask in completedTasks {
-                if completedTask.wasCompletedOnTime {
-                    runningStreak += 1
-                    longestStreak = max(longestStreak, runningStreak)
-                } else {
-                    runningStreak = 0
-                }
-            }
-            member.currentStreak = runningStreak
-            member.longestStreak = longestStreak
+            member.currentStreak = completedTasks.count
+            member.longestStreak = max(member.longestStreak, member.currentStreak)
             member.lastCompletedDate = completedTasks.last?.completedDate
 
             updatedProject.members[memberIndex] = member
@@ -88,6 +78,7 @@ class ProjectManager {
         title: String,
         description: String,
         dueDate: Date,
+        pointsWorth: Int,
         assignedTo memberId: UUID,
         in project: Project
     ) {
@@ -104,7 +95,8 @@ class ProjectManager {
             title: cleanedTitle,
             description: cleanedDescription,
             dueDate: dueDate,
-            assignedToId: memberId
+            assignedToId: memberId,
+            pointsWorth: pointsWorth
         )
 
         updatedProject.tasks.append(task)
@@ -120,6 +112,28 @@ class ProjectManager {
 
         var updatedProject = projects[projectIndex]
         updatedProject.members.append(TeamMember(name: cleanedName))
+        updateProject(updatedProject)
+    }
+
+    func deleteTask(_ task: Task, in project: Project) {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }) else { return }
+        var updatedProject = projects[projectIndex]
+
+        updatedProject.tasks.removeAll { $0.id == task.id }
+        if let memberIndex = updatedProject.members.firstIndex(where: { $0.id == task.assignedToId }) {
+            updatedProject.members[memberIndex].tasksAssigned.removeAll { $0.id == task.id }
+        }
+
+        updateProject(updatedProject)
+    }
+
+    func deleteMember(_ member: TeamMember, in project: Project) {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }) else { return }
+        var updatedProject = projects[projectIndex]
+
+        updatedProject.members.removeAll { $0.id == member.id }
+        updatedProject.tasks.removeAll { $0.assignedToId == member.id }
+
         updateProject(updatedProject)
     }
 

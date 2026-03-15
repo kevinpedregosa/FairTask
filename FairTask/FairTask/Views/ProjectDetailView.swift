@@ -6,6 +6,8 @@ struct ProjectDetailView: View {
 
     @State private var showingNewTask = false
     @State private var showingNewMember = false
+    @State private var memberToDelete: TeamMember?
+    @State private var taskToDelete: Task?
 
     var body: some View {
         List {
@@ -16,6 +18,14 @@ struct ProjectDetailView: View {
                 } else {
                     ForEach(currentProject.members) { member in
                         MemberRowView(member: member, project: currentProject)
+                            .contentShape(Rectangle())
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    memberToDelete = member
+                                } label: {
+                                    Label("Delete Member", systemImage: "trash")
+                                }
+                            }
                     }
                 }
             }
@@ -27,6 +37,14 @@ struct ProjectDetailView: View {
                 } else {
                     ForEach(currentProject.tasks) { task in
                         TaskRowView(task: task, project: currentProject)
+                            .contentShape(Rectangle())
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    taskToDelete = task
+                                } label: {
+                                    Label("Delete Task", systemImage: "trash")
+                                }
+                            }
                     }
                 }
             }
@@ -58,6 +76,50 @@ struct ProjectDetailView: View {
         }
         .sheet(isPresented: $showingNewTask) {
             NewTaskView(project: currentProject)
+        }
+        .confirmationDialog(
+            "Delete Member?",
+            isPresented: Binding(
+                get: { memberToDelete != nil },
+                set: { if !$0 { memberToDelete = nil } }
+            )
+        ) {
+            if let memberToDelete {
+                Button("Delete \(memberToDelete.name)", role: .destructive) {
+                    projectManager.deleteMember(memberToDelete, in: currentProject)
+                    self.memberToDelete = nil
+                }
+            }
+
+            Button("Cancel", role: .cancel) {
+                memberToDelete = nil
+            }
+        } message: {
+            if let memberToDelete {
+                Text("This will remove \(memberToDelete.name) and all tasks assigned to them.")
+            }
+        }
+        .confirmationDialog(
+            "Delete Task?",
+            isPresented: Binding(
+                get: { taskToDelete != nil },
+                set: { if !$0 { taskToDelete = nil } }
+            )
+        ) {
+            if let taskToDelete {
+                Button("Delete \(taskToDelete.title)", role: .destructive) {
+                    projectManager.deleteTask(taskToDelete, in: currentProject)
+                    self.taskToDelete = nil
+                }
+            }
+
+            Button("Cancel", role: .cancel) {
+                taskToDelete = nil
+            }
+        } message: {
+            if let taskToDelete {
+                Text("This will remove \(taskToDelete.title).")
+            }
         }
     }
 

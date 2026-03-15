@@ -15,6 +15,7 @@ struct Task: Identifiable, Codable, Hashable {
     var assignedToId: UUID
     var isCompleted: Bool
     var completedDate: Date?
+    var pointsWorth: Int
 
     init(
         id: UUID = UUID(),
@@ -23,7 +24,8 @@ struct Task: Identifiable, Codable, Hashable {
         dueDate: Date,
         assignedToId: UUID,
         isCompleted: Bool = false,
-        completedDate: Date? = nil
+        completedDate: Date? = nil,
+        pointsWorth: Int = 10
     ) {
         self.id = id
         self.title = title
@@ -32,6 +34,7 @@ struct Task: Identifiable, Codable, Hashable {
         self.assignedToId = assignedToId
         self.isCompleted = isCompleted
         self.completedDate = completedDate
+        self.pointsWorth = pointsWorth
     }
 
     var status: TaskStatus {
@@ -54,6 +57,29 @@ struct Task: Identifiable, Codable, Hashable {
 
     var pointsAwarded: Int {
         if !isCompleted { return 0 }
-        return wasCompletedOnTime ? 10 : 5
+        return wasCompletedOnTime ? pointsWorth : max(1, pointsWorth / 2)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case description
+        case dueDate
+        case assignedToId
+        case isCompleted
+        case completedDate
+        case pointsWorth
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decode(String.self, forKey: .description)
+        dueDate = try container.decode(Date.self, forKey: .dueDate)
+        assignedToId = try container.decode(UUID.self, forKey: .assignedToId)
+        isCompleted = try container.decode(Bool.self, forKey: .isCompleted)
+        completedDate = try container.decodeIfPresent(Date.self, forKey: .completedDate)
+        pointsWorth = try container.decodeIfPresent(Int.self, forKey: .pointsWorth) ?? 10
     }
 }

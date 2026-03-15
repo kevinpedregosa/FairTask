@@ -31,9 +31,9 @@ struct MemberRowView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
 
-            if !tasksForMember.isEmpty {
-                TaskStatusBar(tasks: tasksForMember)
-            }
+            Circle()
+                .fill(memberCompletionColor)
+                .frame(width: 8, height: 8)
         }
         .padding(.vertical, 4)
     }
@@ -41,38 +41,10 @@ struct MemberRowView: View {
     private var tasksForMember: [Task] {
         project.tasksForMember(member.id)
     }
-}
 
-struct TaskStatusBar: View {
-    let tasks: [Task]
-
-    var body: some View {
-        HStack(spacing: 4) {
-            ForEach(tasks.prefix(8)) { task in
-                Circle()
-                    .fill(colorForTask(task))
-                    .frame(width: 8, height: 8)
-            }
-
-            if tasks.count > 8 {
-                Text("+\(tasks.count - 8)")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private func colorForTask(_ task: Task) -> Color {
-        switch task.status {
-        case .completed:
-            return .green
-        case .overdue:
-            return .red
-        case .dueToday:
-            return .orange
-        case .upcoming:
-            return .blue
-        }
+    private var memberCompletionColor: Color {
+        let hasIncompleteTask = tasksForMember.contains { !$0.isCompleted }
+        return hasIncompleteTask ? .red : .green
     }
 }
 
