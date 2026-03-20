@@ -25,14 +25,17 @@ struct ProjectDashboardView: View {
                                     Text(member.name)
                                         .font(.headline)
                                     HStack {
-                                        Text("🏆 \(member.points)")
-                                        Text("🔥\(member.streak)")
+                                        Text("\(member.points) points")
+                                            .foregroundStyle(.blue)
+
+                                        Text("\(member.streak) streak")
+                                            .foregroundStyle(member.streak > 0 ? .orange : .secondary)
+
                                         if let badge = badgeText(for: member) {
                                             Text(badge)
                                         }
                                     }
                                     .font(.subheadline)
-                                    .foregroundStyle(.secondary)
                                 }
                             }
                         }

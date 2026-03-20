@@ -10,9 +10,13 @@ struct TaskRowView: View {
             Button {
                 projectManager.toggleTaskCompletion(task, in: project)
             } label: {
-                Text(task.isCompleted ? "✅" : "⭕️")
-                    .font(.title3)
-                    .foregroundStyle(task.isCompleted ? .green : statusColor)
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(task.isCompleted ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
+                    .frame(width: 20, height: 20)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(task.isCompleted ? Color.green : Color.red, lineWidth: 2)
+                    )
             }
             .buttonStyle(.plain)
 
@@ -39,13 +43,10 @@ struct TaskRowView: View {
 
             Spacer()
 
-            HStack(spacing: 4) {
-                Text("🏆")
-                Text("\(task.pointsWorth)")
-            }
-            .font(.caption)
-            .fontWeight(.semibold)
-            .foregroundStyle(.blue)
+            Text("\(task.pointsWorth) points")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.blue)
         }
         .padding(.vertical, 4)
         .opacity(task.isCompleted ? 0.6 : 1.0)

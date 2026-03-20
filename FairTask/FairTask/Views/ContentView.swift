@@ -56,9 +56,13 @@ struct ContentView: View {
                             projectManager.deleteProjects(at: indexSet)
                         }
                     }
+#if os(iOS)
+                    .scrollContentBackground(.hidden)
+#endif
                 }
             }
             .navigationTitle("FairTask")
+            .background(MetallicBackground().ignoresSafeArea())
             .confirmationDialog(
                 "Delete Project?",
                 isPresented: Binding(

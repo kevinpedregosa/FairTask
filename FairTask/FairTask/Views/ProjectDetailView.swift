@@ -10,45 +10,63 @@ struct ProjectDetailView: View {
     @State private var taskToDelete: Task?
 
     var body: some View {
-        List {
-            Section("Team Overview") {
-                if currentProject.members.isEmpty {
-                    Text("No members yet")
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(currentProject.members) { member in
-                        MemberRowView(member: member, project: currentProject)
-                            .contentShape(Rectangle())
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    memberToDelete = member
-                                } label: {
-                                    Label("Delete Member", systemImage: "trash")
-                                }
-                            }
-                    }
-                }
-            }
+        Group {
+#if os(iOS)
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 16) {
+                    sectionHeader("Team Overview")
+                    teamSection
 
-            Section("All Tasks") {
-                if currentProject.tasks.isEmpty {
-                    Text("No tasks yet")
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(currentProject.tasks) { task in
-                        TaskRowView(task: task, project: currentProject)
-                            .contentShape(Rectangle())
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    taskToDelete = task
-                                } label: {
-                                    Label("Delete Task", systemImage: "trash")
+                    sectionHeader("All Tasks")
+                    taskSection
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
+            }
+#else
+            List {
+                Section("Team Overview") {
+                    if currentProject.members.isEmpty {
+                        Text("No members yet")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(currentProject.members) { member in
+                            MemberRowView(member: member, project: currentProject)
+                                .contentShape(Rectangle())
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        memberToDelete = member
+                                    } label: {
+                                        Label("Delete Member", systemImage: "trash")
+                                    }
                                 }
-                            }
+                        }
+                    }
+                }
+
+                Section("All Tasks") {
+                    if currentProject.tasks.isEmpty {
+                        Text("No tasks yet")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(currentProject.tasks) { task in
+                            TaskRowView(task: task, project: currentProject)
+                                .contentShape(Rectangle())
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        taskToDelete = task
+                                    } label: {
+                                        Label("Delete Task", systemImage: "trash")
+                                    }
+                                }
+                        }
                     }
                 }
             }
+#endif
         }
+        .background(MetallicBackground().ignoresSafeArea())
         .navigationTitle(currentProject.name)
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -121,6 +139,64 @@ struct ProjectDetailView: View {
                 Text("This will remove \(taskToDelete.title).")
             }
         }
+    }
+
+    @ViewBuilder
+    private var teamSection: some View {
+        if currentProject.members.isEmpty {
+            Text("No members yet")
+                .foregroundStyle(.secondary)
+        } else {
+            VStack(spacing: 0) {
+                ForEach(currentProject.members) { member in
+                    MemberRowView(member: member, project: currentProject)
+                        .contentShape(Rectangle())
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                memberToDelete = member
+                            } label: {
+                                Label("Delete Member", systemImage: "trash")
+                            }
+                        }
+                        .padding(.vertical, 8)
+
+                    Divider()
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var taskSection: some View {
+        if currentProject.tasks.isEmpty {
+            Text("No tasks yet")
+                .foregroundStyle(.secondary)
+        } else {
+            VStack(spacing: 0) {
+                ForEach(currentProject.tasks) { task in
+                    TaskRowView(task: task, project: currentProject)
+                        .contentShape(Rectangle())
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                taskToDelete = task
+                            } label: {
+                                Label("Delete Task", systemImage: "trash")
+                            }
+                        }
+                        .padding(.vertical, 8)
+
+                    Divider()
+                }
+            }
+        }
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.headline)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 4)
     }
 
     private var currentProject: Project {
