@@ -23,6 +23,8 @@ struct TaskRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(task.title)
                     .font(.body)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
                     .strikethrough(task.isCompleted)
 
                 HStack {
@@ -45,11 +47,12 @@ struct TaskRowView: View {
 
             Text("\(task.pointsWorth) points")
                 .font(.caption)
-                .fontWeight(.semibold)
+                .fontWeight(.bold)
                 .foregroundStyle(.blue)
         }
         .padding(.vertical, 4)
         .opacity(task.isCompleted ? 0.6 : 1.0)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var statusText: String {

@@ -18,7 +18,7 @@ struct MemberRowView: View {
 
                 Text("\(member.totalPoints) points")
                     .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
                     .foregroundStyle(.blue)
             }
 
@@ -36,6 +36,7 @@ struct MemberRowView: View {
                 .frame(width: 8, height: 8)
         }
         .padding(.vertical, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var tasksForMember: [Task] {

@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 struct ProjectDetailView: View {
     @Environment(ProjectManager.self) private var projectManager
@@ -13,18 +16,21 @@ struct ProjectDetailView: View {
     var body: some View {
         Group {
 #if os(iOS)
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 16) {
-                    sectionHeader("Team Overview")
+            List {
+                Section {
                     teamSection
-
-                    sectionHeader("All Tasks")
-                    taskSection
+                } header: {
+                    sectionHeader("Team Overview")
                 }
-                .padding(.horizontal)
-                .padding(.top, 8)
-                .padding(.bottom, 24)
+
+                Section {
+                    taskSection
+                } header: {
+                    sectionHeader("All Tasks")
+                }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
 #else
             List {
                 Section("Team Overview") {
@@ -155,8 +161,24 @@ struct ProjectDetailView: View {
             Text("No members yet")
                 .foregroundStyle(.secondary)
         } else {
-            VStack(spacing: 0) {
-                ForEach(currentProject.members) { member in
+            let members = currentProject.members
+            ForEach(Array(members.enumerated()), id: \.element.id) { index, member in
+                let isFirst = index == 0
+                let isLast = index == members.count - 1
+                let cornerStyle: CardCornerStyle = {
+                    switch (isFirst, isLast) {
+                    case (true, true):
+                        return .all
+                    case (true, false):
+                        return .top
+                    case (false, true):
+                        return .bottom
+                    default:
+                        return .none
+                    }
+                }()
+
+                VStack(spacing: 0) {
                     MemberRowView(member: member, project: currentProject)
                         .contentShape(Rectangle())
                         .contextMenu {
@@ -166,10 +188,53 @@ struct ProjectDetailView: View {
                                 Label("Delete Member", systemImage: "trash")
                             }
                         }
-                        .padding(.vertical, 8)
+                        .overlay(alignment: .trailing) {
+                            Button {
+                                memberToDelete = member
+                            } label: {
+                                Image(systemName: "chevron.right")
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.gray)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.trailing, 20)
+                        }
+#if os(iOS)
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                memberToDelete = member
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.white.opacity(0.92))
+#endif
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 20)
 
-                    Divider()
+                    if index != members.count - 1 {
+                        Divider()
+                            .padding(.leading, 12)
+                            .padding(.trailing, 12)
+                    }
                 }
+                .background(
+                    CardRowBackground(style: cornerStyle, radius: 24)
+                        .fill(Color.white.opacity(0.96))
+                        .padding(.horizontal, 12)
+                )
+                .overlay(
+                    CardRowBackground(style: cornerStyle, radius: 24)
+                        .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                        .padding(.horizontal, 12)
+                )
+#if os(iOS)
+                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+#endif
             }
         }
     }
@@ -180,8 +245,24 @@ struct ProjectDetailView: View {
             Text("No tasks yet")
                 .foregroundStyle(.secondary)
         } else {
-            VStack(spacing: 0) {
-                ForEach(currentProject.tasks) { task in
+            let tasks = currentProject.tasks
+            ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
+                let isFirst = index == 0
+                let isLast = index == tasks.count - 1
+                let cornerStyle: CardCornerStyle = {
+                    switch (isFirst, isLast) {
+                    case (true, true):
+                        return .all
+                    case (true, false):
+                        return .top
+                    case (false, true):
+                        return .bottom
+                    default:
+                        return .none
+                    }
+                }()
+
+                VStack(spacing: 0) {
                     TaskRowView(task: task, project: currentProject)
                         .contentShape(Rectangle())
                         .contextMenu {
@@ -191,10 +272,53 @@ struct ProjectDetailView: View {
                                 Label("Delete Task", systemImage: "trash")
                             }
                         }
-                        .padding(.vertical, 8)
+                        .overlay(alignment: .trailing) {
+                            Button {
+                                taskToDelete = task
+                            } label: {
+                                Image(systemName: "chevron.right")
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.gray)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.trailing, 20)
+                        }
+#if os(iOS)
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                taskToDelete = task
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.white.opacity(0.92))
+#endif
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 20)
 
-                    Divider()
+                    if index != tasks.count - 1 {
+                        Divider()
+                            .padding(.leading, 12)
+                            .padding(.trailing, 12)
+                    }
                 }
+                .background(
+                    CardRowBackground(style: cornerStyle, radius: 24)
+                        .fill(Color.white.opacity(0.96))
+                        .padding(.horizontal, 12)
+                )
+                .overlay(
+                    CardRowBackground(style: cornerStyle, radius: 24)
+                        .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                        .padding(.horizontal, 12)
+                )
+#if os(iOS)
+                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+#endif
             }
         }
     }
@@ -202,7 +326,8 @@ struct ProjectDetailView: View {
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.headline)
-            .foregroundStyle(.secondary)
+            .fontWeight(.bold)
+            .foregroundStyle(.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, 4)
     }
@@ -210,6 +335,45 @@ struct ProjectDetailView: View {
     private var currentProject: Project {
         projectManager.projects.first { $0.id == project.id } ?? project
     }
+}
+
+private struct CardRowBackground: Shape {
+    var style: CardCornerStyle
+    var radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+#if os(iOS)
+        let corners: UIRectCorner
+        switch style {
+        case .all:
+            corners = .allCorners
+        case .top:
+            corners = [.topLeft, .topRight]
+        case .bottom:
+            corners = [.bottomLeft, .bottomRight]
+        case .none:
+            corners = []
+        }
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
+#else
+        if style == .none {
+            return Path(rect)
+        }
+        return Path(roundedRect: rect, cornerRadius: radius)
+#endif
+    }
+}
+
+private enum CardCornerStyle {
+    case all
+    case top
+    case bottom
+    case none
 }
 
 #Preview {
