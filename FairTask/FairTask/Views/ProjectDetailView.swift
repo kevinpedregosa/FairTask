@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProjectDetailView: View {
     @Environment(ProjectManager.self) private var projectManager
+    @EnvironmentObject private var themeStore: ThemeStore
     let project: Project
 
     @State private var showingNewTask = false
@@ -66,7 +67,14 @@ struct ProjectDetailView: View {
             }
 #endif
         }
-        .background(MetallicBackground().ignoresSafeArea())
+        .background(
+            LinearGradient(
+                colors: [themeStore.color1, themeStore.color2],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+        )
         .navigationTitle(currentProject.name)
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)

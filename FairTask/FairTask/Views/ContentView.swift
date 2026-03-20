@@ -2,67 +2,95 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(ProjectManager.self) private var projectManager
+    @EnvironmentObject private var themeStore: ThemeStore
     @State private var showingNewProject = false
     @State private var projectToDelete: Project?
 
     var body: some View {
         NavigationStack {
-            Group {
-                if projectManager.projects.isEmpty {
-                    VStack(spacing: 20) {
-                        Image(systemName: "folder.badge.plus")
-                            .font(.system(size: 60))
-                            .foregroundStyle(.blue)
+            ZStack {
+                LinearGradient(
+                    colors: [themeStore.color1, themeStore.color2],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-                        Text("No Projects Yet")
-                            .font(.title2)
-                            .fontWeight(.semibold)
+                Group {
+                    if projectManager.projects.isEmpty {
+                        VStack(spacing: 20) {
+                            Image(systemName: "folder.badge.plus")
+                                .font(.system(size: 60))
+                                .foregroundStyle(.blue)
 
-                        Text("Create your first project to start managing tasks")
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+                            Text("No Projects Yet")
+                                .font(.title2)
+                                .fontWeight(.semibold)
 
-                        Button("Create Project") {
-                            showingNewProject = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                    .padding()
-                } else {
-                    List {
-                        ForEach(projectManager.projects) { project in
-                            NavigationLink {
-                                ProjectDetailView(project: project)
+                            Text("Create your first project to start managing tasks")
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+
+                            Button("Create Project") {
+                                showingNewProject = true
+                            }
+                            .buttonStyle(.borderedProminent)
+
+                            Button {
+                                themeStore.randomize()
                             } label: {
-                                ProjectRowView(project: project)
-                                    .padding(.vertical, 4)
+                                Text("Change Color")
+                                    .fontWeight(.semibold)
+                                    .padding(.horizontal, 18)
+                                    .padding(.vertical, 8)
+                                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                             }
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    projectToDelete = project
+                        }
+                        .padding()
+                    } else {
+                        List {
+                            ForEach(projectManager.projects) { project in
+                                NavigationLink {
+                                    ProjectDetailView(project: project)
                                 } label: {
-                                    Label("Delete Project", systemImage: "trash")
+                                    ProjectRowView(project: project)
+                                        .padding(.vertical, 4)
+                                }
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        projectToDelete = project
+                                    } label: {
+                                        Label("Delete Project", systemImage: "trash")
+                                    }
+                                }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        projectToDelete = project
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
                             }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    projectToDelete = project
+                            .onDelete { indexSet in
+                                projectManager.deleteProjects(at: indexSet)
+                            }
+
+                            Section {
+                                Button {
+                                    themeStore.randomize()
                                 } label: {
-                                    Label("Delete", systemImage: "trash")
+                                    Text("Change Color")
+                                        .frame(maxWidth: .infinity, alignment: .center)
                                 }
                             }
                         }
-                        .onDelete { indexSet in
-                            projectManager.deleteProjects(at: indexSet)
-                        }
-                    }
 #if os(iOS)
-                    .scrollContentBackground(.hidden)
+                        .scrollContentBackground(.hidden)
 #endif
+                    }
                 }
             }
             .navigationTitle("FairTask")
-            .background(MetallicBackground().ignoresSafeArea())
             .confirmationDialog(
                 "Delete Project?",
                 isPresented: Binding(
