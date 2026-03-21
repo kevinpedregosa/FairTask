@@ -5,6 +5,7 @@ struct ContentView: View {
     @EnvironmentObject private var themeStore: ThemeStore
     @State private var showingNewProject = false
     @State private var projectToDelete: Project?
+    @State private var selectedProject: Project?
 
     var body: some View {
         NavigationStack {
@@ -50,12 +51,13 @@ struct ContentView: View {
                     } else {
                         List {
                             ForEach(projectManager.projects) { project in
-                                NavigationLink {
-                                    ProjectDetailView(project: project)
+                                Button {
+                                    selectedProject = project
                                 } label: {
                                     ProjectRowView(project: project)
                                         .padding(.vertical, 4)
                                 }
+                                .buttonStyle(.plain)
                                 .contextMenu {
                                     Button(role: .destructive) {
                                         projectToDelete = project
@@ -91,6 +93,9 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("FairTask")
+            .navigationDestination(item: $selectedProject) { project in
+                ProjectDetailView(project: project)
+            }
             .confirmationDialog(
                 "Delete Project?",
                 isPresented: Binding(

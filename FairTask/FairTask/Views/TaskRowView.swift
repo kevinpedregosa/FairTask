@@ -18,7 +18,7 @@ struct TaskRowView: View {
                             .stroke(task.isCompleted ? Color.green : Color.red, lineWidth: 2)
                     )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.borderless)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(task.title)
@@ -42,8 +42,7 @@ struct TaskRowView: View {
                         .foregroundStyle(task.isCompleted ? statusColor : .red)
                 }
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Text("\(task.pointsWorth) points")
                 .font(.caption)

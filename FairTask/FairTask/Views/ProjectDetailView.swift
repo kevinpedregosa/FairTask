@@ -12,6 +12,8 @@ struct ProjectDetailView: View {
     @State private var showingNewMember = false
     @State private var memberToDelete: TeamMember?
     @State private var taskToDelete: Task?
+    @State private var selectedTask: Task?
+    @State private var selectedMember: TeamMember?
 
     var body: some View {
         Group {
@@ -41,6 +43,9 @@ struct ProjectDetailView: View {
                         ForEach(currentProject.members) { member in
                             MemberRowView(member: member, project: currentProject)
                                 .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedMember = member
+                                }
                                 .contextMenu {
                                     Button(role: .destructive) {
                                         memberToDelete = member
@@ -60,6 +65,9 @@ struct ProjectDetailView: View {
                         ForEach(currentProject.tasks) { task in
                             TaskRowView(task: task, project: currentProject)
                                 .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedTask = task
+                                }
                                 .contextMenu {
                                     Button(role: .destructive) {
                                         taskToDelete = task
@@ -85,6 +93,12 @@ struct ProjectDetailView: View {
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
 #endif
+        .navigationDestination(item: $selectedTask) { task in
+            TaskDetailView(task: task, project: currentProject)
+        }
+        .navigationDestination(item: $selectedMember) { member in
+            MemberDetailView(member: member, project: currentProject)
+        }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
@@ -110,10 +124,10 @@ struct ProjectDetailView: View {
             NewTaskView(project: currentProject)
         }
         .confirmationDialog(
-            "Delete Member?",
+            memberToDelete != nil ? "Delete Member?" : "Delete Task?",
             isPresented: Binding(
-                get: { memberToDelete != nil },
-                set: { if !$0 { memberToDelete = nil } }
+                get: { memberToDelete != nil || taskToDelete != nil },
+                set: { if !$0 { memberToDelete = nil; taskToDelete = nil } }
             )
         ) {
             if let memberToDelete {
@@ -123,21 +137,6 @@ struct ProjectDetailView: View {
                 }
             }
 
-            Button("Cancel", role: .cancel) {
-                memberToDelete = nil
-            }
-        } message: {
-            if let memberToDelete {
-                Text("This will remove \(memberToDelete.name) and all tasks assigned to them.")
-            }
-        }
-        .confirmationDialog(
-            "Delete Task?",
-            isPresented: Binding(
-                get: { taskToDelete != nil },
-                set: { if !$0 { taskToDelete = nil } }
-            )
-        ) {
             if let taskToDelete {
                 Button("Delete \(taskToDelete.title)", role: .destructive) {
                     projectManager.deleteTask(taskToDelete, in: currentProject)
@@ -146,10 +145,13 @@ struct ProjectDetailView: View {
             }
 
             Button("Cancel", role: .cancel) {
+                memberToDelete = nil
                 taskToDelete = nil
             }
         } message: {
-            if let taskToDelete {
+            if let memberToDelete {
+                Text("This will remove \(memberToDelete.name) and all tasks assigned to them.")
+            } else if let taskToDelete {
                 Text("This will remove \(taskToDelete.title).")
             }
         }
@@ -188,17 +190,6 @@ struct ProjectDetailView: View {
                                 Label("Delete Member", systemImage: "trash")
                             }
                         }
-                        .overlay(alignment: .trailing) {
-                            Button {
-                                memberToDelete = member
-                            } label: {
-                                Image(systemName: "chevron.right")
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(Color.gray)
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.trailing, 20)
-                        }
 #if os(iOS)
                         .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             Button(role: .destructive) {
@@ -219,6 +210,10 @@ struct ProjectDetailView: View {
                             .padding(.leading, 12)
                             .padding(.trailing, 12)
                     }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    selectedMember = member
                 }
                 .background(
                     CardRowBackground(style: cornerStyle, radius: 24)
@@ -272,17 +267,6 @@ struct ProjectDetailView: View {
                                 Label("Delete Task", systemImage: "trash")
                             }
                         }
-                        .overlay(alignment: .trailing) {
-                            Button {
-                                taskToDelete = task
-                            } label: {
-                                Image(systemName: "chevron.right")
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(Color.gray)
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.trailing, 20)
-                        }
 #if os(iOS)
                         .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             Button(role: .destructive) {
@@ -303,6 +287,10 @@ struct ProjectDetailView: View {
                             .padding(.leading, 12)
                             .padding(.trailing, 12)
                     }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    selectedTask = task
                 }
                 .background(
                     CardRowBackground(style: cornerStyle, radius: 24)

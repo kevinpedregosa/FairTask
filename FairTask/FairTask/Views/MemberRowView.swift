@@ -44,6 +44,10 @@ struct MemberRowView: View {
     }
 
     private var memberCompletionColor: Color {
+        if tasksForMember.isEmpty {
+            return .red
+        }
+
         let hasIncompleteTask = tasksForMember.contains { !$0.isCompleted }
         return hasIncompleteTask ? .red : .green
     }

@@ -115,6 +115,54 @@ class ProjectManager {
         updateProject(updatedProject)
     }
 
+    func updateMemberName(_ member: TeamMember, in project: Project, name: String) {
+        let cleanedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanedName.isEmpty else { return }
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }) else { return }
+
+        var updatedProject = projects[projectIndex]
+        guard let memberIndex = updatedProject.members.firstIndex(where: { $0.id == member.id }) else { return }
+
+        var updatedMember = updatedProject.members[memberIndex]
+        updatedMember.name = cleanedName
+        updatedProject.members[memberIndex] = updatedMember
+
+        updateProject(updatedProject)
+    }
+
+    func updateTaskDetails(
+        _ task: Task,
+        in project: Project,
+        title: String,
+        description: String,
+        dueDate: Date,
+        pointsWorth: Int,
+        assignedToId: UUID
+    ) {
+        let cleanedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanedTitle.isEmpty else { return }
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }) else { return }
+
+        var updatedProject = projects[projectIndex]
+        guard let taskIndex = updatedProject.tasks.firstIndex(where: { $0.id == task.id }) else { return }
+
+        var updatedTask = updatedProject.tasks[taskIndex]
+        updatedTask.title = cleanedTitle
+        updatedTask.description = cleanedDescription
+        updatedTask.dueDate = dueDate
+        updatedTask.pointsWorth = pointsWorth
+        updatedTask.assignedToId = assignedToId
+        updatedProject.tasks[taskIndex] = updatedTask
+
+        for index in updatedProject.members.indices {
+            let memberId = updatedProject.members[index].id
+            updatedProject.members[index].tasksAssigned = updatedProject.tasks.filter { $0.assignedToId == memberId }
+        }
+
+        updateProject(updatedProject)
+    }
+
     func deleteTask(_ task: Task, in project: Project) {
         guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }) else { return }
         var updatedProject = projects[projectIndex]
