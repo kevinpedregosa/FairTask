@@ -18,14 +18,18 @@ The app is designed to make project status visible at a glance and to add lightw
 1. Create a project from the home screen.
 2. Add members to the project.
 3. Add tasks with a due date, assignee, and points value.
-4. Mark tasks complete from the task list.
-5. Review the team overview to see streaks and point totals.
-6. Use the Change Color button on the home screen to cycle the background gradient.
+4. Tap a member or task card to see full details.
+5. Edit member names or task details from the detail screens.
+6. Mark tasks complete from the task list.
+7. Review the team overview to see streaks and point totals.
+8. Use the Change Color button on the home screen to cycle the background gradient.
 
 ## Features
 - Project list with create and delete actions.
 - Team overview with streaks and trophy totals.
 - Tasks with due dates, status coloring, and point values.
+- Task and member detail pages with edit actions for names, descriptions, assignments, and points.
+- Long-press delete for projects, members, and tasks.
 - Shared theme background that carries from the home screen to project detail.
 - Local persistence via `UserDefaults`.
 
