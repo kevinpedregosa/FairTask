@@ -2,6 +2,16 @@
 
 FairTask is a SwiftUI project and task manager focused on small teams. It lets you create projects, add team members, assign tasks with due dates, set point values, and track progress with streaks and points.
 
+## Tech Stack
+- Swift 5
+- SwiftUI for the app interface and navigation.
+- Observation and Combine for app state and shared stores.
+- Foundation models using `Codable`, `UUID`, `Date`, and `Calendar`.
+- Local JSON persistence with `UserDefaults`.
+- Xcode project targeting Apple platforms, including iOS Simulator and macOS build destinations.
+- Swift Testing for unit tests and XCTest for UI tests.
+- No required third-party dependencies.
+
 ## What
 FairTask organizes work into projects that contain members and tasks. Each task has an assignee, a due date, and a points value. The project detail view provides a team overview and a task list so you can see who is responsible for what and how work is progressing.
 
